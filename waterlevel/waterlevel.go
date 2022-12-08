@@ -34,7 +34,7 @@ func (w *waterLevel) InitWaterLevel() {
 func (w *waterLevel) MonitorLevel() {
 	println("Starting water level sensor monitoring")
 	for {
-		if w.sensorPin.Get() {
+		if !w.sensorPin.Get() {
 			println("Water pump is on")
 			w.relayPin.High()
 		} else {
