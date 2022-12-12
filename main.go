@@ -12,7 +12,8 @@ var wg sync.WaitGroup
 
 func main() {
 	defer wg.Done()
-	wl := waterlevel.NewWaterLevelSensor(m.GPIO17, m.GPIO15, m.PinInputPullup)
+	// Aquarium water level
+	wl := waterlevel.NewWaterLevelSensor(m.GPIO17, m.GPIO15, m.GPIO14, m.PinInputPullup)
 	wl.InitWaterLevel()
 
 	wg.Add(1)

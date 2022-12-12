@@ -7,10 +7,6 @@ main() {
     realHome="$(homeCheck)"
     userInput="$1"
     binaryFile="${userInput:="build/release"}"
-    repoPath="${realHome}/src/pico/openocd"
-    if [[ ! -d $repoPath ]]; then
-        scripts/build_install_openocd.sh
-    fi
 
     if launchOpenocd "$binaryFile"; then
         launchMinicom "$binaryFile"
