@@ -7,8 +7,9 @@ import (
 )
 
 type waterLevel struct {
-	sensorPin  m.Pin
-	relayPin m.Pin
+	waterLevel  m.Pin // Pump sensor
+	pumpRelay m.Pin // Pump relay
+	reservoir m.Pin // Reservoir sensor
 	sensorMode m.PinMode // should be PinInputPullup
 	pumpDelay time.Time // actual time is meaningless unless an RTC is added to track time across power cycles
 }
@@ -28,20 +29,22 @@ type WaterLevel interface {
 	MonitorLevel()
 }
 
-func NewWaterLevelSensor(sPin, rPin m.Pin, mode m.PinMode) WaterLevel {
+func NewWaterLevelSensor(pumpSensorPin, pumpRelayPin, reservoirPin m.Pin, mode m.PinMode) WaterLevel {
 	return &waterLevel{
-		sensorPin:  sPin,
-		relayPin: rPin,
+		waterLevel:  pumpSensorPin,
+		pumpRelay: pumpRelayPin,
+		reservoir: reservoirPin,
 		sensorMode: mode,
 	}
 }
 
 // InitWaterLevel configures the water level sensor pin and relay pin
 func (w *waterLevel) InitWaterLevel() {
-	fmt.Printf("Initializing water level sensor on pin %d in mode %d\n", w.sensorPin, w.sensorMode)
+	fmt.Printf("Initializing water level sensor on pin %d in mode %d\n", w.waterLevel, w.sensorMode)
 	fmt.Printf("Pump flow rate is %f gallons per second\n", gps)
-	w.sensorPin.Configure(m.PinConfig{Mode: w.sensorMode})
-	w.relayPin.Configure(m.PinConfig{Mode: m.PinOutput})
+	w.waterLevel.Configure(m.PinConfig{Mode: w.sensorMode})
+	w.pumpRelay.Configure(m.PinConfig{Mode: m.PinOutput})
+	w.reservoir.Configure(m.PinConfig{Mode: w.sensorMode})
 	w.pumpDelay = time.Now()
 }
 
@@ -53,10 +56,13 @@ func (w *waterLevel) InitWaterLevel() {
 func (w *waterLevel) MonitorLevel() {
 	println("Starting water level sensor monitoring")
 	for {
-		if !w.sensorPin.Get() {
-			w.actuatePumpRelay()
+		if !w.waterLevel.Get() {
+			empty := w.checkReservoirLevel()
+			if !empty {
+				w.actuatePumpRelay()
+			}
 		} else {
-			w.relayPin.Low()
+			w.pumpRelay.Low()
 		}
 		time.Sleep(1 * time.Second)
 	}
@@ -71,17 +77,29 @@ func (w *waterLevel) MonitorLevel() {
 // Without an RTC the time delay is lost across power cycles
 func (w *waterLevel) actuatePumpRelay() {
 	if volumePumped >= 1.0 {
+		fmt.Printf("%f water pumped, shutting off pump for time delay\n", volumePumped)
+		w.pumpRelay.Low()
 		fmt.Printf("Pump time delay: %v\n", w.pumpDelay)
 		w.pumpDelay = time.Now().Add(12 * time.Hour)
 		// capture total volume to display on something like an oled screen
 		totalVolumePumped = volumePumped
 		volumePumped = 0.0
-		w.relayPin.Low()
 	}
 
 	if w.pumpDelay.Before(time.Now()) {
 		volumePumped += gps
-		w.relayPin.High()
+		w.pumpRelay.High()
 		fmt.Printf("Water pump is on\nGallons pumped: %f\n", volumePumped)
+	}
+}
+
+// checkReservoirLevel returns true if the reservoir has water and false if it's empty
+func (w *waterLevel) checkReservoirLevel() bool {
+	if w.reservoir.Get() {
+		fmt.Printf("Reservoir empty\n")
+		w.pumpRelay.Low()
+		return true
+	} else {
+		return false
 	}
 }
