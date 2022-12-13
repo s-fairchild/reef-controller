@@ -12,6 +12,10 @@ type waterLevel struct {
 	reservoir m.Pin // Reservoir sensor
 	sensorMode m.PinMode // should be PinInputPullup
 	pumpDelay time.Time // actual time is meaningless unless an RTC is added to track time across power cycles
+	// LED Signals
+	emptyReservoirLed m.Pin
+	delayLed m.Pin
+	noError m.Pin
 }
 
 var (
@@ -27,6 +31,7 @@ const (
 type WaterLevel interface {
 	InitWaterLevel()
 	MonitorLevel()
+	InitSignalLeds(emptyReservoir, delay, noError m.Pin)
 }
 
 func NewWaterLevelSensor(pumpSensorPin, pumpRelayPin, reservoirPin m.Pin, mode m.PinMode) WaterLevel {
@@ -45,6 +50,7 @@ func (w *waterLevel) InitWaterLevel() {
 	w.waterLevel.Configure(m.PinConfig{Mode: w.sensorMode})
 	w.pumpRelay.Configure(m.PinConfig{Mode: m.PinOutput})
 	w.reservoir.Configure(m.PinConfig{Mode: w.sensorMode})
+	m.LED.Configure(m.PinConfig{Mode: m.PinOutput})
 	w.pumpDelay = time.Now()
 }
 
@@ -55,12 +61,12 @@ func (w *waterLevel) InitWaterLevel() {
 // A maximum of 1 gallon per 12 hours is set to prevent overflowing.
 func (w *waterLevel) MonitorLevel() {
 	println("Starting water level sensor monitoring")
+	m.LED.High()
 	for {
+		go w.checkStatusAll() // TODO troubleshoot why this doesn't work outside of the loop
 		if !w.waterLevel.Get() {
-			empty := w.checkReservoirLevel()
-			if !empty {
-				w.actuatePumpRelay()
-			}
+			w.checkReservoirLevel()
+			w.actuatePumpRelay()
 		} else {
 			w.pumpRelay.Low()
 		}
@@ -87,19 +93,22 @@ func (w *waterLevel) actuatePumpRelay() {
 	}
 
 	if w.pumpDelay.Before(time.Now()) {
-		volumePumped += gps
 		w.pumpRelay.High()
+		w.delayLed.Low()
+		volumePumped += gps
 		fmt.Printf("Water pump is on\nGallons pumped: %f\n", volumePumped)
+	} else {
+		w.delayLed.High()
 	}
 }
 
-// checkReservoirLevel returns true if the reservoir has water and false if it's empty
-func (w *waterLevel) checkReservoirLevel() bool {
+// checkReservoirLevel blocks until the reservoir isn't empty
+func (w *waterLevel) checkReservoirLevel() {
 	if w.reservoir.Get() {
-		fmt.Printf("Reservoir empty\n")
 		w.pumpRelay.Low()
-		return true
+		fmt.Printf("Reservoir empty\n")
+		w.emptySignal()
 	} else {
-		return false
+		w.emptyReservoirLed.Low()
 	}
 }
