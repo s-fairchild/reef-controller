@@ -27,11 +27,15 @@ Components
 
 ### Circuit Diagrams
 
-Basic components<br>
-![Basic Reef Controller Circuit Diagram](docs/images/reef%20controller.png)
 
-With ds18b20 over UART with simplified 1N4148 diode used rather than transistors.<br>
-![Reef Controller with ds18b20 over UART](docs/images/reef%20controller%20with%20bs18b20%20over%20uart.png)
+[Circuit Diagram Source](https://crcit.net/c/d85ce8abab73407c9d194f981ed2c907)<br>
+![Basic Reef Controller Circuit Diagram](docs/images/Reef%20Controller%20Circuit%202.png)
 
-With ssd1306 display <br>
-![Reef Controller with ssd1306 display](docs/images/reef%20controller%20with%20ssd1306.png)
+
+
+### PCB Prototype Pinout
+
+* Water level sensor
+  * Power: D
+  * Data: C
+  * Ground: E

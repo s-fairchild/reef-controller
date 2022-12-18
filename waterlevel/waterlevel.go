@@ -34,9 +34,9 @@ type WaterLevel interface {
 	InitSignalLeds(emptyReservoir, delay, noError m.Pin)
 }
 
-func NewWaterLevelSensor(pumpSensorPin, pumpRelayPin, reservoirPin m.Pin, mode m.PinMode) WaterLevel {
+func NewWaterLevelSensor(waterLevelSensorPin, pumpRelayPin, reservoirPin m.Pin, mode m.PinMode) WaterLevel {
 	return &waterLevel{
-		waterLevel:  pumpSensorPin,
+		waterLevel:  waterLevelSensorPin,
 		pumpRelay: pumpRelayPin,
 		reservoir: reservoirPin,
 		sensorMode: mode,
