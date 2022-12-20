@@ -28,14 +28,17 @@ Components
 ### Circuit Diagrams
 
 
-[Circuit Diagram Source](https://crcit.net/c/d85ce8abab73407c9d194f981ed2c907)<br>
-![Basic Reef Controller Circuit Diagram](docs/images/Reef%20Controller%20Circuit%202.png)
+[Circuit Diagram Source](https://crcit.net/c/bf1b256fc46445f2befdd5e126289d24)<br>
+![Basic Reef Controller Circuit Diagram](docs/images/Reef%20Controller%20Pump%20v1.1.png)
 
+### PCB Prototypes
 
+![PCB Top](docs/images/reef%20controller%20pcb%20top.jpeg)<br>
 
-### PCB Prototype Pinout
+<img src="docs/images/reef%20controller%20pcb%20bottom.jpeg" alt="drawing" width="700"/><br>
 
-* Water level sensor
-  * Power: D
-  * Data: C
-  * Ground: E
+<img src="docs/images/reef%20controller%20in%20housing.jpeg" alt="drawing" width="700"/><br>
+
+<!-- ![PCB Bottom](docs/images/reef%20controller%20pcb%20bottom.jpeg) -->
+
+<!-- ![PCB in Housing](docs/images/reef%20controller%20in%20housing.jpeg) -->
