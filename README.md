@@ -38,7 +38,3 @@ Components
 <img src="docs/images/reef%20controller%20pcb%20bottom.jpeg" alt="drawing" width="700"/><br>
 
 <img src="docs/images/reef%20controller%20in%20housing.jpeg" alt="drawing" width="700"/><br>
-
-<!-- ![PCB Bottom](docs/images/reef%20controller%20pcb%20bottom.jpeg) -->
-
-<!-- ![PCB in Housing](docs/images/reef%20controller%20in%20housing.jpeg) -->

@@ -15,7 +15,7 @@ func main() {
 	// Aquarium water level
 	wl := waterlevel.NewWaterLevelSensor(m.GP17, m.GP15, m.GP14, m.PinInputPullup)
 	wl.InitWaterLevel()
-	wl.InitSignalLeds(m.GP12, m.GP11, m.GP10)
+	wl.InitSignalLeds(m.GP28, m.GP27, m.GP26)
 
 	wg.Add(1)
 	go wl.MonitorLevel()
