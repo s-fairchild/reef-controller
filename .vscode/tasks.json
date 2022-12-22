@@ -4,9 +4,9 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "release",
+            "label": "go-debug",
             "type": "shell",
-            "command": "make release",
+            "command": "make go-debug",
             "presentation": {
                 "echo": false,
                 "reveal": "silent",

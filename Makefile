@@ -10,18 +10,16 @@ gotests: gochecks
 	pkgs_with_tests=("$$(find ./ -name '*_test.go' -printf "%h\n" | sort -ub)"); \
 	scripts/runUnitTests.sh $$pkgs_with_tests
 
-# TODO add -no-debug and make a debug target
-release: gotests
-	if [[ ! -d build ]]; then \
-		mkdir build ;\
-	fi ;\
-	build=$$(scripts/go_change_check.sh build/release); \
-	if [ $$build == "true" ]; then \
-		tinygo build -target=pico -serial=uart -o build/release; \
-	fi
+go-debug: gotests
+	# May change file extension to .ll or .bin
+	# See for more information: https://tinygo.org/docs/reference/usage/subcommands/
+	scripts/build.sh -o debug.bc
 
-flash: release
-	scripts/launch_openocd.sh build/release
+flash: gotests
+	scripts/launch_openocd.sh debug.bc
+
+uf2: gotests
+	scripts/build.sh -o release.uf2
 
 terminal:
 	if [ -a "/dev/ttyACM0" ]; then \
