@@ -7,19 +7,19 @@ import (
 )
 
 type waterLevel struct {
-	waterLevel  m.Pin // Pump sensor
-	pumpRelay m.Pin // Pump relay
-	reservoir m.Pin // Reservoir sensor
+	waterLevel m.Pin     // Pump sensor
+	pumpRelay  m.Pin     // Pump relay
+	reservoir  m.Pin     // Reservoir sensor
 	sensorMode m.PinMode // should be PinInputPullup
-	pumpDelay time.Time // actual time is meaningless unless an RTC is added to track time across power cycles
+	pumpDelay  time.Time // actual time is meaningless unless an RTC is added to track time across power cycles
 	// LED Signals
 	emptyReservoirLed m.Pin
-	delayLed m.Pin
-	noError m.Pin
+	delayLed          m.Pin
+	noError           m.Pin
 }
 
 var (
-	volumePumped float32 // volume pumped since last delay
+	volumePumped      float32 // volume pumped since last delay
 	totalVolumePumped float32
 )
 
@@ -36,9 +36,9 @@ type WaterLevel interface {
 
 func NewWaterLevelSensor(pumpSensorPin, pumpRelayPin, reservoirPin m.Pin, mode m.PinMode) WaterLevel {
 	return &waterLevel{
-		waterLevel:  pumpSensorPin,
-		pumpRelay: pumpRelayPin,
-		reservoir: reservoirPin,
+		waterLevel: pumpSensorPin,
+		pumpRelay:  pumpRelayPin,
+		reservoir:  reservoirPin,
 		sensorMode: mode,
 	}
 }

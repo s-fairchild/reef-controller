@@ -2,9 +2,9 @@ ONESHELL:
 SHELL = /bin/bash
 
 gochecks:
-	go mod tidy
-	go fmt .
 	# go vet fails with tiny go currently
+	gofmt -w .
+	go mod tidy
 
 gotests: gochecks
 	pkgs_with_tests=("$$(find ./ -name '*_test.go' -printf "%h\n" | sort -ub)"); \
