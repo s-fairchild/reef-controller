@@ -14,6 +14,7 @@ Components
   * [datasheet](docs/datasheets/MT3608.pdf)
 * TDS (Total Dissolved Solids) Meter Sensor
   * [datasheet](docs/datasheets/CQRobot%20Ocean%3A%20TDS%20(Total%20Dissolved%20Solids)%20Meter%20Sensor.pdf)
+  * [Wiki](http://www.cqrobot.wiki/index.php/TDS_(Total_Dissolved_Solids)_Meter_Sensor_SKU:_CQRSENTDS01)
 * [3v Relay](https://www.amazon.com/gp/product/B08W3XDNGK/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1)
   * [5v Relays](https://www.amazon.com/gp/product/B095YD3732/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1) if you're using a 5v system, e. g. Arduino uno
 * Resistors
