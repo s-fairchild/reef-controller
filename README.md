@@ -34,10 +34,10 @@ Components
 
 ### PCB Prototypes
 
-![PCB Top](docs/images/reef%20controller%20pcb%20top.jpeg)<br>
+| Top PCB with Pico | Bottom PCB |
+| :---: | :---: |
+| <img src="docs/images/reef%20controller%20pcb%20top.jpeg" alt="PCB Bottom" width="400"/><br>  |  <img src="docs/images/reef%20controller%20pcb%20bottom.jpeg" alt="PCB Bottom" width="700"/> |
 
-<img src="docs/images/reef%20controller%20pcb%20bottom.jpeg" alt="PCB Bottom" width="700"/><br>
-
-<img src="docs/images/PCB%20Enclosure%201.jpeg" alt="PCB Enclosure 1" width="700"/><br>
-
-<img src="docs/images/PCB%20Enclosure%202.jpeg" alt="PCB Enclosure 2" width="1000"/><br>
+| Inside Enclosure | Pump and Enclosure |
+| :---: | :---: |
+| <img src="docs/images/PCB%20Enclosure%201.jpeg" alt="PCB Enclosure 1" width="700"/>  |  <img src="docs/images/PCB%20Enclosure%202.jpeg" alt="PCB Enclosure 2" width="1000"/> |
