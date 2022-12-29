@@ -1,7 +1,7 @@
 package comms
 
 import (
-	"fmt"
+	"errors"
 	m "machine"
 )
 
@@ -12,7 +12,7 @@ func InitUART(u *m.UART, def bool) error {
 	println("Initializing UART output")
 	err := u.Configure(m.UARTConfig{})
 	if err != nil {
-		return fmt.Errorf("failed to initialize UART0, %s\n", err.Error())
+		return errors.New("failed to initialize UART0:" + err.Error())
 	}
 	println("Successfully initialized UART serial output")
 

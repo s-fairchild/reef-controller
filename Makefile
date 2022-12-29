@@ -17,7 +17,7 @@ release: gotests
 	fi ;\
 	build=$$(scripts/go_change_check.sh build/release); \
 	if [ $$build == "true" ]; then \
-		tinygo build -target=pico -serial=uart -o build/release; \
+		tinygo build -size full -target=pico -serial=uart -o build/release; \
 	fi
 
 flash: release

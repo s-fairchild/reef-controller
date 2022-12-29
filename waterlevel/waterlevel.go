@@ -1,7 +1,6 @@
 package waterlevel
 
 import (
-	"fmt"
 	m "machine"
 	"time"
 )
@@ -45,8 +44,8 @@ func NewWaterLevelSensor(pumpSensorPin, pumpRelayPin, reservoirPin m.Pin, mode m
 
 // InitWaterLevel configures the water level sensor pin and relay pin
 func (w *waterLevel) InitWaterLevel() {
-	fmt.Printf("Initializing water level sensor on pin %d in mode %d\n", w.waterLevel, w.sensorMode)
-	fmt.Printf("Pump flow rate is %f gallons per second\n", gps)
+	println("Initializing water level sensor on pin ", w.waterLevel, "in mode ", w.sensorMode)
+	println("Pump flow rate is ", gps, " gallons per second")
 	w.waterLevel.Configure(m.PinConfig{Mode: w.sensorMode})
 	w.pumpRelay.Configure(m.PinConfig{Mode: m.PinOutput})
 	w.reservoir.Configure(m.PinConfig{Mode: w.sensorMode})
@@ -74,6 +73,7 @@ func (w *waterLevel) MonitorLevel() {
 	}
 }
 
+// TODO use channels to start threads for actuating the pump. If the reservoir goes empty while the pump is on, kill the routine.
 // actuatePumpRelay checks if the total volume pumped is greater than 1 gallon.
 //
 // If more than one gallon has been pumped, a 12 hour delay is set.
@@ -83,9 +83,8 @@ func (w *waterLevel) MonitorLevel() {
 // Without an RTC the time delay is lost across power cycles
 func (w *waterLevel) actuatePumpRelay() {
 	if volumePumped >= 1.0 {
-		fmt.Printf("%f water pumped, shutting off pump for time delay\n", volumePumped)
+		println(volumePumped, " water pumped, shutting off pump for time delay")
 		w.pumpRelay.Low()
-		fmt.Printf("Pump time delay: %v\n", w.pumpDelay)
 		w.pumpDelay = time.Now().Add(12 * time.Hour)
 		// capture total volume to display on something like an oled screen
 		totalVolumePumped = volumePumped
@@ -96,7 +95,7 @@ func (w *waterLevel) actuatePumpRelay() {
 		w.pumpRelay.High()
 		w.delayLed.Low()
 		volumePumped += gps
-		fmt.Printf("Water pump is on\nGallons pumped: %f\n", volumePumped)
+		println("Water pump is on\nGallons pumped:", volumePumped)
 	} else {
 		w.delayLed.High()
 	}
@@ -105,8 +104,9 @@ func (w *waterLevel) actuatePumpRelay() {
 // checkReservoirLevel blocks until the reservoir isn't empty
 func (w *waterLevel) checkReservoirLevel() {
 	if w.reservoir.Get() {
+		w.emptyReservoirLed.Low()
 		w.pumpRelay.Low()
-		fmt.Printf("Reservoir empty\n")
+		println("Reservoir empty")
 		w.emptySignal()
 	} else {
 		w.emptyReservoirLed.Low()
