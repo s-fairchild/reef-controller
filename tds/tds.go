@@ -26,6 +26,7 @@ const (
 	sampleCount                     = 30
 	defaultReference                = 5.0 // 5.0v
 	defaultResolution               = 1023.0
+	referenceTemperature float32 = 25.0
 )
 
 // New returns a new total dissolve solids sensor driver given an ADC pin.
@@ -84,8 +85,9 @@ func (t *device) voltage2tds(v float32, temp float32) float32 {
 
 // calcTempCompCoefficient calculates the compensation for temperature differences
 // Should be very close to 1.8
+// See for temperature dependance information: https://en.wikipedia.org/wiki/Electrical_resistivity_and_conductivity#Temperature_dependence
 func (t *device) calcTempCompCoefficient(temp float32) float32 {
-	return 1.0 + 0.02*(temp-25.0)
+	return 1.0 + 0.02*(temp-referenceTemperature)
 }
 
 func (t *device) calcVoltCompensation(v float32, tempCompCo float32) float32 {
