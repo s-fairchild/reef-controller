@@ -27,6 +27,8 @@ const (
 	defaultReference                = 5.0 // 5.0v
 	defaultResolution               = 1023.0
 	referenceTemperature float32 = 25.0
+	temperatureCoefficient = 0.02
+	tdsFactor float32 = 0.5 // electrical conductivity / 2
 )
 
 // New returns a new total dissolve solids sensor driver given an ADC pin.
@@ -79,18 +81,18 @@ func (d *device) adc2voltage(n uint16) float32 {
 // voltage2tds converts averaged voltage value to tds value
 // formulas were converted from source wiki Arduino example: http://www.cqrobot.wiki/index.php/TDS_(Total_Dissolved_Solids)_Meter_Sensor_SKU:_CQRSENTDS01#Arduino_Application
 func (t *device) voltage2tds(v float32, temp float32) float32 {
-	compVolt := t.calcVoltCompensation(v, t.calcTempCompCoefficient(temp))
-	return (133.42*compVolt*compVolt*compVolt - 255.86*compVolt*compVolt + 857.39*compVolt) * 0.5
+	compV := t.voltageTemperatureCompensation(v, t.temperatureCompensation(temp))
+	// The TDS value is half of the electrical conductivity value, electrical conductivity / 2
+	return (133.42*compV*compV*compV - 255.86*compV*compV + 857.39*compV) * tdsFactor
 }
 
-// calcTempCompCoefficient calculates the compensation for temperature differences
-// Should be very close to 1.8
+// temperatureCompensation uses linear approximation to calculate the temperature coefficient of resistivity
 // See for temperature dependance information: https://en.wikipedia.org/wiki/Electrical_resistivity_and_conductivity#Temperature_dependence
-func (t *device) calcTempCompCoefficient(temp float32) float32 {
-	return 1.0 + 0.02*(temp-referenceTemperature)
+func (t *device) temperatureCompensation(temp float32) float32 {
+	return 1.0 + temperatureCoefficient*(temp-referenceTemperature)
 }
 
-func (t *device) calcVoltCompensation(v float32, tempCompCo float32) float32 {
+func (t *device) voltageTemperatureCompensation(v float32, tempCompCo float32) float32 {
 	return v / tempCompCo
 }
 
