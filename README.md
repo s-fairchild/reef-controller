@@ -13,6 +13,7 @@ Components
 * [MT3608 DC-DC Step Up Power Booster](https://www.amazon.com/gp/product/B089JYBF25/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1)
   * [datasheet](docs/datasheets/MT3608.pdf)
 * TDS (Total Dissolved Solids) Meter Sensor
+  * Used to monitor the tds level of freshwater reservoir. Allows for notifications to change OR filter.
   * [datasheet](docs/datasheets/CQRobot%20Ocean%3A%20TDS%20(Total%20Dissolved%20Solids)%20Meter%20Sensor.pdf)
   * [Wiki](http://www.cqrobot.wiki/index.php/TDS_(Total_Dissolved_Solids)_Meter_Sensor_SKU:_CQRSENTDS01)
 * [3v Relay](https://www.amazon.com/gp/product/B08W3XDNGK/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1)
