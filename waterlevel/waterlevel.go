@@ -9,7 +9,6 @@ type waterLevel struct {
 	waterLevel m.Pin     // Pump sensor
 	pumpRelay  m.Pin     // Pump relay
 	reservoir  m.Pin     // Reservoir sensor
-	sensorMode m.PinMode // should be PinInputPullup
 	pumpDelay  time.Time // actual time is meaningless unless an RTC is added to track time across power cycles
 	// LED Signals
 	emptyReservoirLed m.Pin
@@ -22,9 +21,9 @@ var (
 	totalVolumePumped float32
 )
 
-// gallons per second
+
 const (
-	gps float32 = 0.017
+	gps float32 = 0.017 // gallons per second
 )
 
 type WaterLevel interface {
@@ -33,22 +32,21 @@ type WaterLevel interface {
 	InitSignalLeds(emptyReservoir, delay, noError m.Pin)
 }
 
-func NewWaterLevelSensor(pumpSensorPin, pumpRelayPin, reservoirPin m.Pin, mode m.PinMode) WaterLevel {
+func NewWaterLevelSensor(pumpSensorPin, pumpRelayPin, reservoirPin m.Pin) WaterLevel {
 	return &waterLevel{
 		waterLevel: pumpSensorPin,
 		pumpRelay:  pumpRelayPin,
 		reservoir:  reservoirPin,
-		sensorMode: mode,
 	}
 }
 
 // InitWaterLevel configures the water level sensor pin and relay pin
 func (w *waterLevel) InitWaterLevel() {
-	println("Initializing water level sensor on pin ", w.waterLevel, "in mode ", w.sensorMode)
+	println("Initializing water level sensor on pin ", w.waterLevel)
 	println("Pump flow rate is ", gps, " gallons per second")
-	w.waterLevel.Configure(m.PinConfig{Mode: w.sensorMode})
+	w.waterLevel.Configure(m.PinConfig{Mode: m.PinInputPullup})
 	w.pumpRelay.Configure(m.PinConfig{Mode: m.PinOutput})
-	w.reservoir.Configure(m.PinConfig{Mode: w.sensorMode})
+	w.reservoir.Configure(m.PinConfig{Mode: m.PinInputPullup})
 	m.LED.Configure(m.PinConfig{Mode: m.PinOutput})
 	w.pumpDelay = time.Now()
 }
