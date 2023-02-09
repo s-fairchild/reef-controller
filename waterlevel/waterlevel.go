@@ -8,13 +8,8 @@ import (
 type waterLevel struct {
 	waterLevel m.Pin     // Pump sensor
 	pumpRelay  m.Pin     // Pump relay
-	reservoir  m.Pin     // Reservoir sensor
-	sensorMode m.PinMode // should be PinInputPullup
 	pumpDelay  time.Time // actual time is meaningless unless an RTC is added to track time across power cycles
-	// LED Signals
-	emptyReservoirLed m.Pin
-	delayLed          m.Pin
-	noError           m.Pin
+	mLED	   m.Pin	 // Machine LED
 }
 
 var (
@@ -22,35 +17,33 @@ var (
 	totalVolumePumped float32
 )
 
-// gallons per second
 const (
+	// gallons per second
 	gps float32 = 0.017
 )
 
 type WaterLevel interface {
-	InitWaterLevel()
+	Init()
 	MonitorLevel()
-	InitSignalLeds(emptyReservoir, delay, noError m.Pin)
 }
 
-func NewWaterLevelSensor(pumpSensorPin, pumpRelayPin, reservoirPin m.Pin, mode m.PinMode) WaterLevel {
+func NewWaterLevelSensor(pumpSensorPin, pumpRelayPin m.Pin, led m.Pin) WaterLevel {
 	return &waterLevel{
 		waterLevel: pumpSensorPin,
 		pumpRelay:  pumpRelayPin,
-		reservoir:  reservoirPin,
-		sensorMode: mode,
+		mLED: led,
 	}
 }
 
 // InitWaterLevel configures the water level sensor pin and relay pin
-func (w *waterLevel) InitWaterLevel() {
-	println("Initializing water level sensor on pin ", w.waterLevel, "in mode ", w.sensorMode)
+func (w *waterLevel) Init() {
+	println("Initializing water level sensor on pin ", w.waterLevel)
 	println("Pump flow rate is ", gps, " gallons per second")
-	w.waterLevel.Configure(m.PinConfig{Mode: w.sensorMode})
+	w.waterLevel.Configure(m.PinConfig{Mode: m.PinInputPullup})
 	w.pumpRelay.Configure(m.PinConfig{Mode: m.PinOutput})
-	w.reservoir.Configure(m.PinConfig{Mode: w.sensorMode})
-	m.LED.Configure(m.PinConfig{Mode: m.PinOutput})
 	w.pumpDelay = time.Now()
+	w.mLED.Configure(m.PinConfig{Mode: m.PinOutput})
+	w.mLED.High()
 }
 
 // MonitorLevel polls the sensor pin status once per second to determine if the water level has dropped below the sensor.
@@ -60,11 +53,10 @@ func (w *waterLevel) InitWaterLevel() {
 // A maximum of 1 gallon per 12 hours is set to prevent overflowing.
 func (w *waterLevel) MonitorLevel() {
 	println("Starting water level sensor monitoring")
-	m.LED.High()
 	for {
-		go w.checkStatusAll() // TODO troubleshoot why this doesn't work outside of the loop
+		// TODO Make pumping stop when water level sensor is true again
+		// Currently once it starts pumping, it won't stop until (previously the reservoir was empty) 1 gallon has been pumped
 		if !w.waterLevel.Get() {
-			w.checkReservoirLevel()
 			w.actuatePumpRelay()
 		} else {
 			w.pumpRelay.Low()
@@ -93,22 +85,8 @@ func (w *waterLevel) actuatePumpRelay() {
 
 	if w.pumpDelay.Before(time.Now()) {
 		w.pumpRelay.High()
-		w.delayLed.Low()
 		volumePumped += gps
 		println("Water pump is on\nGallons pumped:", volumePumped)
 	} else {
-		w.delayLed.High()
-	}
-}
-
-// checkReservoirLevel blocks until the reservoir isn't empty
-func (w *waterLevel) checkReservoirLevel() {
-	if w.reservoir.Get() {
-		w.emptyReservoirLed.Low()
-		w.pumpRelay.Low()
-		println("Reservoir empty")
-		w.emptySignal()
-	} else {
-		w.emptyReservoirLed.Low()
 	}
 }
