@@ -3,7 +3,6 @@
 set -o errexit
 
 main() {
-
     realHome="$(homeCheck)"
     userInput="$1"
     if [[ -n $board ]]; then
@@ -41,11 +40,10 @@ homeCheck() {
 launchOpenocd() {
     defaultBoard="rp2040.cfg"
     board="${board:-$defaultBoard}"
-    sudo openocd -s "${realHome}/src/pico/openocd/tcl/" -f interface/picoprobe.cfg -f target/"$board" -c "program ${1} verify reset exit"
+    openocd -s "${realHome}/src/pico/openocd/tcl/" -f interface/picoprobe.cfg -f target/"$board" -c "program ${1} verify reset exit"
 }
 
 launchMinicom() {
-
     local termDev
     termDev="/dev/ttyACM0"
 	if [[ -a $termDev ]]; then
