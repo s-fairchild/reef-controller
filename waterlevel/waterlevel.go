@@ -3,13 +3,16 @@ package waterlevel
 import (
 	m "machine"
 	"time"
+
+	"github.com/s-fairchild/reef-controller/rtc"
 )
 
 type waterLevel struct {
 	waterLevel m.Pin     // Pump sensor
 	pumpRelay  m.Pin     // Pump relay
 	pumpDelay  time.Time // actual time is meaningless unless an RTC is added to track time across power cycles
-	mLED	   m.Pin	 // Machine LED
+	mLED       m.Pin     // Machine LED
+	clock      *rtc.Rtc
 }
 
 var (
@@ -23,19 +26,25 @@ const (
 )
 
 type WaterLevel interface {
+	// InitWaterLevel configures the water level sensor pin and relay pin
 	Init()
+	// MonitorLevel polls the sensor pin status once per second to determine if the water level has dropped below the sensor.
+	//
+	// If the sensor returns false, the water pump is actuated.
+	//
+	// A maximum of 1 gallon per 12 hours is set to prevent overflowing.
 	MonitorLevel()
 }
 
-func NewWaterLevelSensor(pumpSensorPin, pumpRelayPin m.Pin, led m.Pin) WaterLevel {
+func NewWaterLevelSensor(pumpSensorPin, pumpRelayPin m.Pin, led m.Pin, rtc *rtc.Rtc) WaterLevel {
 	return &waterLevel{
 		waterLevel: pumpSensorPin,
 		pumpRelay:  pumpRelayPin,
-		mLED: led,
+		mLED:       led,
+		clock:      rtc,
 	}
 }
 
-// InitWaterLevel configures the water level sensor pin and relay pin
 func (w *waterLevel) Init() {
 	println("Initializing water level sensor on pin ", w.waterLevel)
 	println("Pump flow rate is ", gps, " gallons per second")
@@ -46,11 +55,6 @@ func (w *waterLevel) Init() {
 	w.mLED.High()
 }
 
-// MonitorLevel polls the sensor pin status once per second to determine if the water level has dropped below the sensor.
-//
-// If the sensor returns false, the water pump is actuated.
-//
-// A maximum of 1 gallon per 12 hours is set to prevent overflowing.
 func (w *waterLevel) MonitorLevel() {
 	println("Starting water level sensor monitoring")
 	for {
@@ -71,22 +75,30 @@ func (w *waterLevel) MonitorLevel() {
 // If more than one gallon has been pumped, a 12 hour delay is set.
 //
 // After 24 hours the pump can be activated again.
-//
-// Without an RTC the time delay is lost across power cycles
-func (w *waterLevel) actuatePumpRelay() {
+func (w *waterLevel) actuatePumpRelay() error {
 	if volumePumped >= 1.0 {
 		println(volumePumped, " water pumped, shutting off pump for time delay")
 		w.pumpRelay.Low()
-		w.pumpDelay = time.Now().Add(12 * time.Hour)
-		// capture total volume to display on something like an oled screen
+		now, err := w.clock.Rtc.ReadTime()
+		if err != nil {
+			return err
+		}
+		w.pumpDelay = now.Add(12 * time.Hour)
 		totalVolumePumped = volumePumped
 		volumePumped = 0.0
 	}
 
-	if w.pumpDelay.Before(time.Now()) {
+	now, err := w.clock.Rtc.ReadTime()
+	if err != nil {
+		return err
+	}
+
+	if w.pumpDelay.Before(now) {
 		w.pumpRelay.High()
 		volumePumped += gps
 		println("Water pump is on\nGallons pumped:", volumePumped)
 	} else {
 	}
+
+	return nil
 }
