@@ -20,7 +20,7 @@
                 "target/rp2040.cfg",
             ],
             "searchDir": ["${env:HOME}/src/pico/openocd/tcl/"],
-            "svdFile": "${env:PICO_SDK_PATH}/src/rp2040/hardware_regs/rp2040.svd",
+            "svdFile": "${env:HOME}/src/pico/pico-sdk/src/rp2040/hardware_regs/rp2040.svd",
             // "svdFile": "/home/steven/src/pico/pico-sdk/src/rp2040/hardware_regs/rp2040.svd",
             //"runToEntryPoint": "main",
             "showDevDebugOutput": "parsed",
