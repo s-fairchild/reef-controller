@@ -8,14 +8,16 @@ Components
 * [Float Switch](https://www.amazon.com/gp/product/B072QCHQ2P/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1)
 * [Bayite 12V DC Water Pressure Diaphragm Pump](https://www.amazon.com/gp/product/B01N75ZIXF/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1)
   * Vertical Suction Lift: 5ft (1.5m). Adjustable CUT-OFF Pressure : default 80 PSI, MAX 100 PSI. Amp Draw: 3.0AMP.It doesn't mean 4L/min jet at 80 PSI.
+* [12V DC Dosing Pump Peristaltic Dosing Head](https://www.amazon.com/dp/B01IUVHB8E?psc=1&ref=ppx_yo2ov_dt_b_product_details)
+  * 100 ml's per hour flow rate allows for easy dosing of additives such as magnesium.
 * Water Reservoir
   * Any water container/bucket that you wish to use. I'm using a 5 gallon bucket with a water tight seal to prevent evaporation, with Aragonite sand to keep a consistent 8.2 ph.
 * [MT3608 DC-DC Step Up Power Booster](https://www.amazon.com/gp/product/B089JYBF25/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1)
   * [datasheet](docs/datasheets/MT3608.pdf)
-* TDS (Total Dissolved Solids) Meter Sensor
+<!-- * TDS (Total Dissolved Solids) Meter Sensor
   * Used to monitor the tds level of freshwater reservoir. Allows for notifications to change OR filter.
   * [datasheet](docs/datasheets/CQRobot%20Ocean%3A%20TDS%20(Total%20Dissolved%20Solids)%20Meter%20Sensor.pdf)
-  * [Wiki](http://www.cqrobot.wiki/index.php/TDS_(Total_Dissolved_Solids)_Meter_Sensor_SKU:_CQRSENTDS01)
+  * [Wiki](http://www.cqrobot.wiki/index.php/TDS_(Total_Dissolved_Solids)_Meter_Sensor_SKU:_CQRSENTDS01) -->
 * [3v Relay](https://www.amazon.com/gp/product/B08W3XDNGK/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1)
   * [5v Relays](https://www.amazon.com/gp/product/B095YD3732/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1) if you're using a 5v system, e. g. Arduino uno
 * Resistors
@@ -32,7 +34,7 @@ Components
 ### Circuit Diagrams
 
 [Circuit Diagram Source](https://crcit.net/c/bf1b256fc46445f2befdd5e126289d24)<br>
-![Basic Reef Controller Circuit Diagram](docs/images/Reef%20Controller%20Pump%20v1.1.png)
+![Basic Reef Controller Circuit Diagram](docs/images/Reef%20Controller%20Pump%20v1.2.png)
 
 ### PCB Prototypes
 
