@@ -12,7 +12,7 @@ type waterLevel struct {
 	pumpRelay  m.Pin     // Pump relay
 	pumpDelay  time.Time // actual time is meaningless unless an RTC is added to track time across power cycles
 	mLED       m.Pin     // Machine LED
-	clock      *rtc.Rtc
+	clock      rtc.Rtc
 }
 
 var (
@@ -36,7 +36,7 @@ type WaterLevel interface {
 	MonitorLevel()
 }
 
-func NewWaterLevelSensor(pumpSensorPin, pumpRelayPin m.Pin, led m.Pin, rtc *rtc.Rtc) WaterLevel {
+func New(pumpSensorPin, pumpRelayPin m.Pin, led m.Pin, rtc rtc.Rtc) WaterLevel {
 	return &waterLevel{
 		waterLevel: pumpSensorPin,
 		pumpRelay:  pumpRelayPin,

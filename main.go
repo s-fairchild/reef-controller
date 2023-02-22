@@ -21,17 +21,13 @@ func main() {
 	}
 	println("Current Time:", t.Format(rtc.LayoutDate))
 
-	wl := waterlevel.NewWaterLevelSensor(m.GP17, m.GP15, m.LED, c)
+	wl := waterlevel.New(m.GP17, m.GP15, m.LED, *c)
 	wl.Init()
 	go wl.MonitorLevel()
 
-	magnesiumPump := dosing.New(m.GP18, "magnesium-pump")
+	magnesiumPump := dosing.New(m.GP18, "magnesium-pump", c.Rtc)
 	err = magnesiumPump.Configure(&dosing.DosingConfig{
-		Ml: 30,
-		// Hour: 10,
-		// Minute: 0,
-		// Second: 0,
-		Sram:     c.Rtc,
+		Ml:       30,
 		Interval: 24,
 	})
 	if err != nil {

@@ -36,14 +36,14 @@ type DosingConfig struct {
 	// Hour	 int
 	// Minute   int
 	// Second   int
-	Sram     ds1307.Device
 	Interval time.Duration
 }
 
-func New(pump m.Pin, name string) DosingPump {
+func New(pump m.Pin, name string, sram ds1307.Device) DosingPump {
 	return &dosingPump{
 		pump: pump,
 		name: name,
+		sram: sram,
 	}
 }
 
@@ -72,9 +72,9 @@ func (d *dosingPump) Dose() error {
 	var err error
 	for {
 		println("entering loop")
-		r := make([]byte, 8)
+		r := make([]uint8, 40, 40)
 		// _, err = rtc.ReadSavedTime(r, d.offset, d.sram)
-		_, err = d.ReadSavedTime(r)
+		_, err = rtc.ReadSavedTime(r, d.offset, d.sram)
 		if err != nil {
 			return err
 		}
@@ -100,23 +100,4 @@ func (d *dosingPump) Dose() error {
 
 		}
 	}
-}
-
-func (d *dosingPump) ReadSavedTime(data []byte) (int, error) {
-	_, err := d.sram.Seek(d.offset, 0)
-	if err != nil {
-		return 0, err
-	}
-
-	b, err := d.sram.Read(data)
-	if err != nil {
-		return 0, err
-	}
-
-	println("Read time", string(data))
-
-	if b != len(data) {
-		return 0, errors.New("failed sanity check, Time bytes read from SRAM don't match bytes written")
-	}
-	return b, nil
 }
