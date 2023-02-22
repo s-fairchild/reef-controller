@@ -15,8 +15,8 @@ type dosingPump struct {
 	pump         m.Pin
 	config       *DosingConfig
 	sram         ds1307.Device
-	offset       int64
-	bytesWritten int // TODO possibly remove this if unused
+	offset       int64 // Currently unused, it's here for future plans to help use more than the first index of SRAM
+	bytesWritten int   // TODO possibly remove this if unused
 	lastRun      time.Time
 }
 
@@ -61,6 +61,23 @@ func (d *dosingPump) Configure(c *DosingConfig) error {
 		return err
 	}
 
+	r := make([]uint8, 8, 8)
+	_, err = rtc.ReadSavedTime(r, d.offset, d.sram)
+	if err != nil {
+		return err
+	}
+
+	// See if a previous dose has ran before powering on
+	// The current time must be used in place of the last dose if not
+	_, err = time.Parse(rtc.LayoutTime, string(r))
+	if err != nil {
+		t, err := d.sram.ReadTime()
+		if err != nil {
+			return err
+		}
+		rtc.WriteTime(t, d.offset, d.sram)
+	}
+
 	println("Dosing pump will dose", c.Ml, "ml's every", d.config.Interval, "hours")
 	return nil
 }
@@ -71,14 +88,11 @@ func (d *dosingPump) Dose() error {
 	tick := time.NewTicker(time.Duration(d.config.Ml) * time.Second)
 	var err error
 	for {
-		println("entering loop")
-		r := make([]uint8, 40, 40)
-		// _, err = rtc.ReadSavedTime(r, d.offset, d.sram)
+		r := make([]uint8, 8, 8)
 		_, err = rtc.ReadSavedTime(r, d.offset, d.sram)
 		if err != nil {
 			return err
 		}
-		println("past readtime")
 
 		lastRun, err := time.Parse(rtc.LayoutTime, string(r))
 		if err != nil {
@@ -93,11 +107,11 @@ func (d *dosingPump) Dose() error {
 			d.pump.Low()
 			println("Deactivating dosing pump", d.name, "now")
 
-			d.bytesWritten, err = rtc.WriteTime(time.Now(), d.bytesWritten, d.offset, d.sram)
+			d.bytesWritten, err = rtc.WriteTime(time.Now(), d.offset, d.sram)
 			if err != nil {
 				return err
 			}
-
 		}
+		time.Sleep(1 * time.Minute)
 	}
 }

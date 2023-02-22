@@ -1,7 +1,6 @@
 package rtc
 
 import (
-	"encoding/base64"
 	"errors"
 	m "machine"
 	"time"
@@ -39,19 +38,20 @@ func (c *Rtc) Init() error {
 
 // WriteTime encodes a time as a base64 string
 // then writes the encoded time to sram
-func WriteTime(t time.Time, bytes int, offset int64, rtc ds1307.Device) (int, error) {
+func WriteTime(t time.Time, offset int64, rtc ds1307.Device) (int, error) {
 	rtc.Seek(offset, 0)
 
-	d := base64.StdEncoding.EncodeToString(
-		[]byte(t.Format(LayoutTime)),
-	)
-	b, err := rtc.Write([]byte(d))
+	println("time about to write to SRAM: ", t.Format(LayoutTime))
+	println("Length of string written:", len([]byte(t.Format(LayoutTime))))
+	b, err := rtc.Write([]byte(t.Format(LayoutTime)))
 	if err != nil {
 		return 0, err
 	}
-	if b != len([]byte(d)) {
+	if b != len([]byte(t.Format(LayoutTime))) {
 		panic("bytes encoded not equal to bytes written to SRAM, failed to right dosing time to SRAM")
 	}
+	println("bytes written:", b)
+	println("Wrote to SRAM:", t.Format(LayoutTime))
 	return b, nil
 }
 
@@ -63,7 +63,8 @@ func ReadSavedTime(data []byte, offset int64, rtc ds1307.Device) (int, error) {
 		return 0, err
 	}
 
-	println("Read time", string(data))
+	println("bytes read:", b)
+	println("Read from SRAM:", string(data))
 
 	if b != len(data) {
 		return 0, errors.New("failed sanity check, Time bytes read from SRAM don't match bytes written")

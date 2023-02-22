@@ -2,6 +2,7 @@ package main
 
 import (
 	m "machine"
+	"time"
 
 	"github.com/s-fairchild/reef-controller/comms"
 	"github.com/s-fairchild/reef-controller/dosing"
@@ -15,6 +16,7 @@ func main() {
 		SCL: m.GP27,
 	}, m.I2C1)
 	c.Init()
+	c.Rtc.Write([]byte(time.Now().Format(rtc.LayoutTime)))
 	t, err := c.Rtc.ReadTime()
 	if err != nil {
 		panic(err)
