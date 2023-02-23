@@ -1,7 +1,10 @@
 ONESHELL:
 SHELL = /bin/bash
 
-gochecks:
+easyjson:
+	easyjson -omit_empty types/
+
+gochecks: easyjson
 	# go vet fails with tiny go currently
 	gofmt -w .
 	go mod tidy
