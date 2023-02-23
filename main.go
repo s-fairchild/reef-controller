@@ -16,8 +16,7 @@ func main() {
 		SCL: m.GP27,
 	}, m.I2C1)
 	c.Init()
-	// c.Rtc.SetTime(time.Date(2023, 02, 23, 06, 56, 00, 00, time.UTC))
-	c.Rtc.Write([]byte(time.Now().Format(time.RFC3339)))
+	// c.Rtc.SetTime(time.Date(2023, 02, 23, 15, 15, 00, 00, time.UTC))
 	t, err := c.Rtc.ReadTime()
 	if err != nil {
 		panic(err)
@@ -28,10 +27,10 @@ func main() {
 	wl.Init()
 	go wl.MonitorLevel()
 
-	magnesiumPump := dosing.New(m.GP18, "magnesium-pump", c.Rtc)
+	magnesiumPump := dosing.New(m.GP18, dosing.Magnesium, c.Rtc)
 	err = magnesiumPump.Configure(&dosing.DosingConfig{
 		Ml:       30,
-		Interval: 24,
+		Interval: 24 * time.Hour,
 	})
 	if err != nil {
 		panic(err)

@@ -58,7 +58,7 @@ func WriteTime(t time.Time, offset int64, rtc ds1307.Device) (uint8, error) {
 	if b != len(bytes) {
 		panic("bytes encoded not equal to bytes written to SRAM, failed to right dosing time to SRAM")
 	}
-	println("Wrote to SRAM:", t.Format(time.RFC3339))
+	println("Wrote", b, "bytes", "to SRAM:", t.Format(time.RFC3339))
 	return uint8(b), nil
 }
 

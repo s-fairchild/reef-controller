@@ -11,7 +11,7 @@ import (
 )
 
 type dosingPump struct {
-	name         string
+	name         Liquid
 	pump         m.Pin
 	config       *DosingConfig
 	sram         ds1307.Device
@@ -25,24 +25,24 @@ type DosingPump interface {
 	Dose() error
 }
 
-// DosingConfig holds the dosing pump configuration
-//
-// ml is the volume of liquid to be dispend
-//
-// Hour, Minute, and Second are the time of day to dose in 24 hour format
-// Interval is how often to dose within a 24 hour period
+type Liquid string
+
+const (
+	Magnesium Liquid = "magnesium"
+)
+
 type DosingConfig struct {
-	Ml uint8
-	// Hour	 int
-	// Minute   int
-	// Second   int
-	Interval time.Duration
+	// ml is the volume of liquid to be dispend
+	Ml       uint8
+	// Hour, Minute, and Second are the time of day to dose in 24 hour format
+	// Interval is how often to dose within a 24 hour period
+	Interval time.Duration // TODO Make interval configurable with button and LCD user interface
 }
 
-func New(pump m.Pin, name string, sram ds1307.Device) DosingPump {
+func New(pump m.Pin, liquid Liquid, sram ds1307.Device) DosingPump {
 	return &dosingPump{
 		pump: pump,
-		name: name,
+		name: liquid,
 		sram: sram,
 	}
 }
@@ -61,7 +61,7 @@ func (d *dosingPump) Configure(c *DosingConfig) error {
 		return err
 	}
 
-	s, err := rtc.ReadSavedTime(32, 0, d.sram)
+	s, err := rtc.ReadSavedTime(35, 0, d.sram)
 	if err != nil {
 		return err
 	}
@@ -69,13 +69,13 @@ func (d *dosingPump) Configure(c *DosingConfig) error {
 	println("===================== Configuration ================================")
 	println("====================================================================")
 	println("saved time read to save to SRAM:", s.LastDose.Format(time.RFC3339))
-	println("Dosing pump will dose", c.Ml, "ml's every", d.config.Interval, "hours")
+	println("Dosing pump will dose", d.config.Ml, "ml's every", int(d.config.Interval.Hours()), "hours")
 	println("====================================================================")
 
-	// See if a previous dose has ran before powering on
-	// The current time must be used in place of the last dose if not
-	_, err = time.Parse(time.RFC3339, s.LastDose.Format(time.RFC3339))
-	if err != nil {
+	// Set last dose if one doesn't exist.
+	// This will result in LastDose being the same as current time, causing the Dosing loop
+	// to wait until Interval is over to actually dose, typically 24 hours
+	if s.LastDose.IsZero() {
 		println(err)
 		t, err := d.sram.ReadTime()
 		if err != nil {
@@ -96,8 +96,6 @@ func (d *dosingPump) Configure(c *DosingConfig) error {
 // Dose
 func (d *dosingPump) Dose() error {
 	println("Starting dosing pump", d.name)
-	tick := time.NewTicker(time.Duration(d.config.Ml) * time.Second)
-	tickDay := time.NewTicker(24 * time.Hour)
 	for {
 		s, err := rtc.ReadSavedTime(d.bytesWritten, d.offset, d.sram)
 		if err != nil {
@@ -115,9 +113,11 @@ func (d *dosingPump) Dose() error {
 		println("====================================================================")
 
 		if t.After(s.LastDose) {
-			println("Activating dosing pump", d.name, "now")
 			d.pump.High()
-			<-tick.C
+			println("Activating dosing pump", d.name, "now")
+
+			time.Sleep(time.Duration(d.config.Ml) * time.Second)
+
 			d.pump.Low()
 			println("Deactivating dosing pump", d.name, "now")
 
@@ -131,6 +131,7 @@ func (d *dosingPump) Dose() error {
 				return err
 			}
 		}
-		<-tickDay.C
+		println("Waiting", int(d.config.Interval.Hours()), "hours before dosing...")
+		time.Sleep(d.config.Interval)
 	}
 }
