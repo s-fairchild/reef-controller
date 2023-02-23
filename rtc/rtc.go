@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	LayoutTime   = "15:04:05"
-	LayoutDate   = "2006-01-02 15:04:05"
+	// LayoutTime   = "15:04:05"
+	// time.RFC3339   = "2006-01-02 15:04:05"
 	SRAMCapacity = 56 // SRAM capacity in bytes
 )
 
@@ -51,7 +51,6 @@ func WriteTime(t time.Time, offset int64, rtc ds1307.Device) (uint8, error) {
 		return 0, err
 	}
 
-	println("time about to write to SRAM: ", t.Format(LayoutDate))
 	b, err := rtc.Write(bytes)
 	if err != nil {
 		return 0, err
@@ -59,7 +58,7 @@ func WriteTime(t time.Time, offset int64, rtc ds1307.Device) (uint8, error) {
 	if b != len(bytes) {
 		panic("bytes encoded not equal to bytes written to SRAM, failed to right dosing time to SRAM")
 	}
-	println("Wrote to SRAM:", t.Format(LayoutTime))
+	println("Wrote to SRAM:", t.Format(time.RFC3339))
 	return uint8(b), nil
 }
 
@@ -75,7 +74,7 @@ func ReadSavedTime(size uint8, offset int64, rtc ds1307.Device) (*types.DosingSt
 	state := &types.DosingState{}
 	easyjson.Unmarshal(data, state)
 
-	// println("Read from SRAM:", state.LastDose.Format(LayoutDate))
+	// println("Read from SRAM:", state.LastDose.Format(time.RFC3339))
 
 	if b != len(data) {
 		return &types.DosingState{}, errors.New("failed sanity check, Time bytes read from SRAM don't match bytes written")

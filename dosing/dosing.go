@@ -68,24 +68,26 @@ func (d *dosingPump) Configure(c *DosingConfig) error {
 	println("====================================================================")
 	println("===================== Configuration ================================")
 	println("====================================================================")
-	println("saved time read to save to SRAM:", s.LastDose.Format(rtc.LayoutDate))
+	println("saved time read to save to SRAM:", s.LastDose.Format(time.RFC3339))
 	println("Dosing pump will dose", c.Ml, "ml's every", d.config.Interval, "hours")
 	println("====================================================================")
 
 	// See if a previous dose has ran before powering on
 	// The current time must be used in place of the last dose if not
-	_, err = time.Parse(rtc.LayoutTime, s.LastDose.Format(rtc.LayoutDate))
+	_, err = time.Parse(time.RFC3339, s.LastDose.Format(time.RFC3339))
 	if err != nil {
-	t, err := d.sram.ReadTime()
-	if err != nil {
-		return err
-	}
-	println("Last dose not found, setting now as last dose time.")
-	d.bytesWritten, err = rtc.WriteTime(t, d.offset, d.sram)
-	if err != nil {
-		println("failed to initial time")
-		panic(err)
-	}
+		println(err)
+		t, err := d.sram.ReadTime()
+		if err != nil {
+			return err
+		}
+
+		println("Last dose not found, setting now as last dose time.")
+		d.bytesWritten, err = rtc.WriteTime(t, d.offset, d.sram)
+		if err != nil {
+			println("failed to initial time")
+			panic(err)
+		}
 	}
 
 	return nil
@@ -95,6 +97,7 @@ func (d *dosingPump) Configure(c *DosingConfig) error {
 func (d *dosingPump) Dose() error {
 	println("Starting dosing pump", d.name)
 	tick := time.NewTicker(time.Duration(d.config.Ml) * time.Second)
+	tickDay := time.NewTicker(24 * time.Hour)
 	for {
 		s, err := rtc.ReadSavedTime(d.bytesWritten, d.offset, d.sram)
 		if err != nil {
@@ -102,24 +105,32 @@ func (d *dosingPump) Dose() error {
 		}
 
 		t, err := d.sram.ReadTime()
+		if err != nil {
+			return err
+		}
 		println("===================== Dosing - ", d.name, " ========================")
 		println("====================================================================")
-		println("last run", s.LastDose.Format(rtc.LayoutTime))
-		println("Current time:", t.Format(rtc.LayoutTime))
+		println("last run", s.LastDose.Format(time.RFC3339))
+		println("Current time:", t.Format(time.RFC3339))
 		println("====================================================================")
 
-		if s.LastDose.After(s.LastDose) {
+		if t.After(s.LastDose) {
 			println("Activating dosing pump", d.name, "now")
 			d.pump.High()
 			<-tick.C
 			d.pump.Low()
 			println("Deactivating dosing pump", d.name, "now")
 
-			d.bytesWritten, err = rtc.WriteTime(time.Now(), d.offset, d.sram)
+			t, err := d.sram.ReadTime()
+			if err != nil {
+				return err
+			}
+
+			d.bytesWritten, err = rtc.WriteTime(t, d.offset, d.sram)
 			if err != nil {
 				return err
 			}
 		}
-		time.Sleep(1 * time.Minute)
+		<-tickDay.C
 	}
 }

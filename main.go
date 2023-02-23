@@ -17,12 +17,12 @@ func main() {
 	}, m.I2C1)
 	c.Init()
 	// c.Rtc.SetTime(time.Date(2023, 02, 23, 06, 56, 00, 00, time.UTC))
-	c.Rtc.Write([]byte(time.Now().Format(rtc.LayoutTime)))
+	c.Rtc.Write([]byte(time.Now().Format(time.RFC3339)))
 	t, err := c.Rtc.ReadTime()
 	if err != nil {
 		panic(err)
 	}
-	println("Current Time:", t.Format(rtc.LayoutDate))
+	println("Current Time:", t.Format(time.RFC3339))
 
 	wl := waterlevel.New(m.GP17, m.GP15, m.LED, *c)
 	wl.Init()
