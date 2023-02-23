@@ -15,8 +15,8 @@ type dosingPump struct {
 	pump         m.Pin
 	config       *DosingConfig
 	sram         ds1307.Device
-	offset       int64 // Currently unused, it's here for future plans to help use more than the first index of SRAM
-	bytesWritten uint8 // TODO possibly remove this if unused
+	offset       int64
+	bytesWritten uint8 // used to make slice size when reading time
 	lastRun      time.Time
 }
 
@@ -61,28 +61,33 @@ func (d *dosingPump) Configure(c *DosingConfig) error {
 		return err
 	}
 
-	r := make([]uint8, 8, 8)
-	_, err = rtc.ReadSavedTime(d.bytesWritten, d.offset, d.sram)
+	s, err := rtc.ReadSavedTime(32, 0, d.sram)
 	if err != nil {
 		return err
 	}
+	println("====================================================================")
+	println("===================== Configuration ================================")
+	println("====================================================================")
+	println("saved time read to save to SRAM:", s.LastDose.Format(rtc.LayoutDate))
+	println("Dosing pump will dose", c.Ml, "ml's every", d.config.Interval, "hours")
+	println("====================================================================")
 
 	// See if a previous dose has ran before powering on
 	// The current time must be used in place of the last dose if not
-	_, err = time.Parse(rtc.LayoutTime, string(r))
+	_, err = time.Parse(rtc.LayoutTime, s.LastDose.Format(rtc.LayoutDate))
 	if err != nil {
-		t, err := d.sram.ReadTime()
-		if err != nil {
-			return err
-		}
-		d.bytesWritten, err = rtc.WriteTime(t, d.offset, d.sram)
-		if err != nil {
-			println("failed to initial time")
-			panic(err)
-		}
+	t, err := d.sram.ReadTime()
+	if err != nil {
+		return err
+	}
+	println("Last dose not found, setting now as last dose time.")
+	d.bytesWritten, err = rtc.WriteTime(t, d.offset, d.sram)
+	if err != nil {
+		println("failed to initial time")
+		panic(err)
+	}
 	}
 
-	println("Dosing pump will dose", c.Ml, "ml's every", d.config.Interval, "hours")
 	return nil
 }
 
@@ -96,7 +101,12 @@ func (d *dosingPump) Dose() error {
 			return err
 		}
 
-		println(d.name, "last run", s.LastDose.Format(rtc.LayoutTime))
+		t, err := d.sram.ReadTime()
+		println("===================== Dosing - ", d.name, " ========================")
+		println("====================================================================")
+		println("last run", s.LastDose.Format(rtc.LayoutTime))
+		println("Current time:", t.Format(rtc.LayoutTime))
+		println("====================================================================")
 
 		if s.LastDose.After(s.LastDose) {
 			println("Activating dosing pump", d.name, "now")

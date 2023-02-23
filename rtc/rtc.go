@@ -51,8 +51,7 @@ func WriteTime(t time.Time, offset int64, rtc ds1307.Device) (uint8, error) {
 		return 0, err
 	}
 
-	println("time about to write to SRAM: ", t.Format(LayoutTime))
-	println("Length of string written:", len([]byte(t.Format(LayoutTime))))
+	println("time about to write to SRAM: ", t.Format(LayoutDate))
 	b, err := rtc.Write(bytes)
 	if err != nil {
 		return 0, err
@@ -60,13 +59,12 @@ func WriteTime(t time.Time, offset int64, rtc ds1307.Device) (uint8, error) {
 	if b != len(bytes) {
 		panic("bytes encoded not equal to bytes written to SRAM, failed to right dosing time to SRAM")
 	}
-	println("bytes written:", b)
 	println("Wrote to SRAM:", t.Format(LayoutTime))
 	return uint8(b), nil
 }
 
 func ReadSavedTime(size uint8, offset int64, rtc ds1307.Device) (*types.DosingState, error) {
-	rtc.Seek(int64(offset), 0)
+	rtc.Seek(offset, 0)
 
 	data := make([]uint8, size, size)
 	b, err := rtc.Read(data)
@@ -77,8 +75,7 @@ func ReadSavedTime(size uint8, offset int64, rtc ds1307.Device) (*types.DosingSt
 	state := &types.DosingState{}
 	easyjson.Unmarshal(data, state)
 
-	println("bytes read:", b)
-	println("Read from SRAM:", state.LastDose.Format(LayoutTime))
+	// println("Read from SRAM:", state.LastDose.Format(LayoutDate))
 
 	if b != len(data) {
 		return &types.DosingState{}, errors.New("failed sanity check, Time bytes read from SRAM don't match bytes written")

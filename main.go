@@ -16,6 +16,7 @@ func main() {
 		SCL: m.GP27,
 	}, m.I2C1)
 	c.Init()
+	// c.Rtc.SetTime(time.Date(2023, 02, 23, 06, 56, 00, 00, time.UTC))
 	c.Rtc.Write([]byte(time.Now().Format(rtc.LayoutTime)))
 	t, err := c.Rtc.ReadTime()
 	if err != nil {
