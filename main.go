@@ -8,6 +8,7 @@ import (
 	"github.com/s-fairchild/reef-controller/dosing"
 	"github.com/s-fairchild/reef-controller/rtc"
 	"github.com/s-fairchild/reef-controller/waterlevel"
+	"github.com/s-fairchild/reef-controller/ec"
 )
 
 func main() {
@@ -37,8 +38,16 @@ func main() {
 	}
 
 	go magnesiumPump.Dose()
+	
+	salinity := ec.New(m.ADC0, 3.3, ec.ResolutionScaled)
+	salinity.Configure()
 
-	select {}
+	for {
+		println(salinity.GetSalinity(25.5556)) // 78.0°F
+		time.Sleep(time.Minute)
+	}
+
+	// select {}
 }
 
 func init() {
