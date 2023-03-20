@@ -7,7 +7,7 @@ import (
 	"github.com/s-fairchild/reef-controller/comms"
 	"github.com/s-fairchild/reef-controller/dosing"
 	"github.com/s-fairchild/reef-controller/rtc"
-	"github.com/s-fairchild/reef-controller/waterlevel"
+	"github.com/s-fairchild/reef-controller/ato"
 	"github.com/s-fairchild/reef-controller/ec"
 )
 
@@ -24,7 +24,7 @@ func main() {
 	}
 	println("Current Time:", t.Format(time.RFC3339))
 
-	wl := waterlevel.New(m.GP17, m.GP15, m.LED, *c)
+	wl := ato.New(m.GP17, m.GP15, m.LED, *c)
 	wl.Init()
 	go wl.MonitorLevel()
 
