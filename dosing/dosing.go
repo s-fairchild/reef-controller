@@ -33,7 +33,7 @@ const (
 
 type DosingConfig struct {
 	// ml is the volume of liquid to be dispend
-	Ml       uint8
+	Ml uint8
 	// Hour, Minute, and Second are the time of day to dose in 24 hour format
 	// Interval is how often to dose within a 24 hour period
 	Interval time.Duration // TODO Make interval configurable with button and LCD user interface

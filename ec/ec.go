@@ -35,7 +35,7 @@ const (
 	referenceTemperature   float32       = 25.0
 	temperatureCoefficient               = 0.02
 	tdsFactor              float32       = 0.5 // electrical conductivity / 2
-	ResolutionScaled	   float32       = 65536
+	ResolutionScaled       float32       = 65536
 )
 
 // New returns a new total dissolve solids sensor driver given an ADC pin.

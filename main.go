@@ -4,11 +4,11 @@ import (
 	m "machine"
 	"time"
 
+	"github.com/s-fairchild/reef-controller/ato"
 	"github.com/s-fairchild/reef-controller/comms"
 	"github.com/s-fairchild/reef-controller/dosing"
-	"github.com/s-fairchild/reef-controller/rtc"
-	"github.com/s-fairchild/reef-controller/ato"
 	"github.com/s-fairchild/reef-controller/ec"
+	"github.com/s-fairchild/reef-controller/rtc"
 )
 
 func main() {
@@ -24,7 +24,7 @@ func main() {
 	}
 	println("Current Time:", t.Format(time.RFC3339))
 
-	wl := ato.New(m.GP17, m.GP15, m.LED, *c)
+	wl := ato.New(m.GP17, m.GP13, m.GP15, m.LED)
 	wl.Init()
 	go wl.MonitorLevel()
 
@@ -38,7 +38,7 @@ func main() {
 	}
 
 	go magnesiumPump.Dose()
-	
+
 	salinity := ec.New(m.ADC0, 3.3, ec.ResolutionScaled)
 	salinity.Configure()
 

@@ -3,16 +3,14 @@ package ato
 import (
 	m "machine"
 	"time"
-
-	"github.com/s-fairchild/reef-controller/rtc"
 )
 
 type ato struct {
-	waterLevel m.Pin     // Pump sensor
-	pump  m.Pin     // Pump relay
-	pumpDelay  time.Time // actual time is meaningless unless an RTC is added to track time across power cycles
-	mLED       m.Pin     // Machine LED
-	clock      rtc.Rtc
+	floatLow  m.Pin     // primary float switch
+	floatHigh m.Pin     // secondary float switch
+	pump      m.Pin     // Pump relay
+	pumpDelay time.Time // actual time is meaningless unless an RTC is added to track time across power cycles
+	mLED      m.Pin     // Machine LED
 }
 
 var (
@@ -36,19 +34,19 @@ type Ato interface {
 	MonitorLevel()
 }
 
-func New(pumpSensorPin, pumpRelayPin m.Pin, led m.Pin, rtc rtc.Rtc) Ato {
+func New(pumpSensorPin, floatHigh, pumpRelayPin, led m.Pin) Ato {
 	return &ato{
-		waterLevel: pumpSensorPin,
-		pump:  pumpRelayPin,
-		mLED:       led,
-		clock:      rtc,
+		floatLow:  pumpSensorPin,
+		floatHigh: floatHigh,
+		pump:      pumpRelayPin,
+		mLED:      led,
 	}
 }
 
 func (w *ato) Init() {
-	println("Initializing water level sensor on pin ", w.waterLevel)
+	println("Initializing water level sensor on pin ", w.floatLow)
 	println("Pump flow rate is ", gps, " gallons per second")
-	w.waterLevel.Configure(m.PinConfig{Mode: m.PinInputPullup})
+	w.floatLow.Configure(m.PinConfig{Mode: m.PinInputPullup})
 	w.pump.Configure(m.PinConfig{Mode: m.PinOutput})
 	w.pumpDelay = time.Now()
 	w.mLED.Configure(m.PinConfig{Mode: m.PinOutput})
@@ -58,7 +56,7 @@ func (w *ato) Init() {
 func (w *ato) MonitorLevel() {
 	println("Starting water level sensor monitoring")
 	for {
-		if !w.waterLevel.Get() {
+		if !w.floatLow.Get() {
 			w.actuatePump()
 		} else {
 			w.pump.Low()
@@ -74,24 +72,15 @@ func (w *ato) MonitorLevel() {
 //
 // After 24 hours the pump can be activated again.
 func (w *ato) actuatePump() error {
-	if volumePumped >= 1.0 {
+	if volumePumped >= 10.2 {
 		println(volumePumped, " water pumped, shutting off pump for time delay")
 		w.pump.Low()
-		now, err := w.clock.Rtc.ReadTime()
-		if err != nil {
-			return err
-		}
-		w.pumpDelay = now.Add(12 * time.Hour)
+		w.pumpDelay = time.Now().Add(12 * time.Hour)
 		totalVolumePumped = volumePumped
 		volumePumped = 0.0
 	}
 
-	now, err := w.clock.Rtc.ReadTime()
-	if err != nil {
-		return err
-	}
-
-	if w.pumpDelay.Before(now) {
+	if w.pumpDelay.Before(time.Now()) {
 		w.pump.High()
 		volumePumped += gps
 		println("Water pump is on\nGallons pumped:", volumePumped)
